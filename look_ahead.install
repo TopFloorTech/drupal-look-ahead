@@ -1,0 +1,51 @@
+<?php
+function look_ahead_install() {
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('type', 'module')
+    ->condition('name', 'look_ahead')
+    ->execute();
+}
+
+function look_ahead_schema() {
+  $schema['cache_look_ahead'] = drupal_get_schema_unprocessed('system', 'cache');
+
+  return $schema;
+}
+
+function look_ahead_uninstall() {
+  look_ahead_clear_static_cache();
+
+  variable_delete('look_ahead_enabled');
+  variable_delete('look_ahead_entity_types_enabled');
+  variable_delete('look_ahead_menus_enabled');
+  variable_delete('look_ahead_menu_blocks_enabled');
+  variable_delete('look_ahead_ajax');
+  variable_delete('look_ahead_static_cache');
+  variable_delete('look_ahead_static_cache_dir');
+}
+
+function look_ahead_requirements($phase) {
+  $requirements = array();
+
+  switch ($phase) {
+    case 'runtime':
+      if (variable_get('look_ahead_static_cache', false)) {
+
+        $uri = look_ahead_static_cache_uri();
+
+        $writable = file_prepare_directory($uri, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+        $requirements['look_ahead_static_cache'] = array(
+          'title' => t('Look-ahead static cache directory'),
+          'value' => $uri,
+          'description' => ($writable) ? t('Directory is writable by Drupal') : t('Directory cannot be written to. Please manually create and set permissions then check again.'),
+          'severity' => ($writable) ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+        );
+      }
+
+      break;
+  }
+
+  return $requirements;
+}

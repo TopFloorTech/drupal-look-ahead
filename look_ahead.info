@@ -1,0 +1,7 @@
+name = Look Ahead
+description = Provides an additional node view mode that is attached to enabled menus
+core = 7.x
+version = 7.x-1.0-beta4
+package = Top Floor Tech
+dependencies[] = menu
+dependencies[] = entity_resolve
